@@ -121,6 +121,13 @@ button { cursor: pointer; }
 
 .dots { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; min-height: 12px; }
 .dots i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255, 255, 255, 0.14); }
+.dots[data-size="m"] { gap: 5px; }
+.dots[data-size="m"] i { width: 8px; height: 8px; }
+.dots[data-size="s"] { gap: 4px; max-width: 280px; margin-inline: auto; }
+.dots[data-size="s"] i { width: 6px; height: 6px; }
+.dots[data-size="xs"] { gap: 3px; max-width: 300px; margin-inline: auto; }
+.dots[data-size="xs"] i { width: 4px; height: 4px; }
+.dots[data-size="m"] i.now, .dots[data-size="s"] i.now, .dots[data-size="xs"] i.now { box-shadow: 0 0 0 3px color-mix(in srgb, var(--phase) 30%, transparent); }
 .dots i.done { background: var(--phase); opacity: 0.55; }
 .dots i.now { background: var(--phase); box-shadow: 0 0 0 4px color-mix(in srgb, var(--phase) 30%, transparent); }
 

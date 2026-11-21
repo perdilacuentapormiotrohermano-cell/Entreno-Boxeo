@@ -432,7 +432,8 @@
 
     function drawDots(current, done, n) {
       const box = $('roundDots');
-      if (n > 15) { box.textContent = ''; box.innerHTML = ''; return; }
+      // Muchos rounds: los puntos se achican y se acomodan en varias filas.
+      box.dataset.size = n <= 15 ? 'l' : n <= 30 ? 'm' : n <= 60 ? 's' : 'xs';
       if (box.children.length !== n) {
         box.innerHTML = '';
         for (let i = 0; i < n; i++) box.appendChild(document.createElement('i'));
