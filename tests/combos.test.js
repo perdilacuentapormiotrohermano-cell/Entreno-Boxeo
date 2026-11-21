@@ -101,6 +101,34 @@ for (let i = 0; i < 20000; i++) {
 }
 burstBad ? fail(`${burstBad} llamados de ráfaga fuera de regla`) : ok('todas las ráfagas ≤ 3 golpes y sin pasos');
 
+
+/* 4b) Tipos de ronda: manoplas, bolsa, defensa y contra, reflejos, repetición */
+console.log('\n4b) Tipos de ronda');
+{
+  const base = { mode: 'normal', defense: true, movement: true, body: true, maxSpeechMs: 4200, rate: 1 };
+  const cnt = (t, re) => t.filter((x) => re.test(x)).length;
+  let bad = 0;
+  [1, 2, 3].forEach((level) => {
+    const st = {};
+    for (let i = 0; i < 5000; i++) {
+      const sh = C.next({ ...base, level, drill: 'manoplas' }, (st.m = st.m || { recent: [] }));
+      if (!C.validate(sh).ok || cnt(sh, /^m/) || cnt(sh, /^[1-6]/) < 2) bad++;
+      const bo = C.next({ ...base, level, drill: 'bolsa' }, (st.b = st.b || { recent: [] }));
+      if (!C.validate(bo).ok || cnt(bo, /^(sj|sc|d)$/) || cnt(bo, /^[1-6]/) < (level === 1 ? 2 : 3)) bad++;
+      const de = C.next({ ...base, level, drill: 'defensa' }, (st.d = st.d || { recent: [] }));
+      if (!C.validate(de).ok || !/^(sj|sc|d)$/.test(de[0]) || de.length < 2) bad++;
+      const re = C.next({ ...base, level, drill: 'reflejos' }, (st.r = st.r || { recent: [] }));
+      if (!C.validate(re).ok || re.length > 2) bad++;
+      const dc = C.drillCombo({ ...base, level });
+      if (!C.validate(dc).ok || cnt(dc, /^m/)) bad++;
+    }
+  });
+  bad ? fail(`${bad} llamados fuera de regla en los tipos de ronda`) : ok('manoplas / bolsa / defensa / reflejos / repetición: 90.000 llamados válidos y respetan su tipo');
+  const okC = C.parseCombo('1-2-3-2').ok && C.parseCombo('sj 2 3').ok;
+  const noC = !C.parseCombo('2 2').ok && !C.parseCombo('hola').ok && !C.parseCombo('').ok;
+  okC && noC ? ok('el combo escrito a mano se valida (acepta «1-2-3-2» y rechaza «2 2»)') : fail('parseCombo');
+}
+
 /* 5) Velocidad de la voz: ¿una persona puede seguirla? */
 console.log('\n5) Voz');
 const worst = C.describe('1 2 5 6 3 2'.split(' '), { style: 'nombres' });

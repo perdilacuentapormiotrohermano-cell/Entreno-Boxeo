@@ -31,7 +31,10 @@
     <label><input type="radio" name="kind" value="routine"><span>📋 Rutina</span></label>
   </div>
 
-  <button id="btnFullscreen" class="icon-btn" type="button" aria-label="Pantalla completa" title="Pantalla completa (para verlo de lejos)">⛶</button>
+  <div class="top-actions">
+    <button id="btnProgress" class="icon-btn" type="button" aria-label="Mi progreso" title="Mi progreso">📈</button>
+    <button id="btnFullscreen" class="icon-btn" type="button" aria-label="Pantalla completa" title="Pantalla completa (para verlo de lejos)">⛶</button>
+  </div>
 </header>
 
 <main class="layout">
@@ -115,6 +118,22 @@
       </div>
       <p class="total" id="totalPreview"></p>
 
+      <div class="grid2 single-only" data-lock>
+        <div class="field">
+          <label for="warmup">Calentamiento guiado</label>
+          <select id="warmup">
+            <option value="0">No</option><option value="3">3 min</option><option value="5">5 min</option><option value="8">8 min</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="cooldown">Vuelta a la calma</label>
+          <select id="cooldown">
+            <option value="0">No</option><option value="3">3 min</option><option value="5">5 min</option><option value="8">8 min</option>
+          </select>
+        </div>
+      </div>
+      <p class="hint-line single-only" id="guideHint"></p>
+
       <!-- ---- solo Rutina ---- -->
       <div class="routine-only" id="routinePanel">
         <h3>Rutina</h3>
@@ -149,6 +168,15 @@
           <label><input type="radio" name="level" value="3"><span>Avanzado</span></label>
         </div>
         <p class="hint-line" id="levelHint"></p>
+
+        <h3>Tipo de ronda</h3>
+        <select id="roundType" aria-label="Tipo de ronda" data-lock></select>
+        <p class="hint-line" id="roundTypeHint"></p>
+        <div class="field" id="drillComboField" data-lock>
+          <label for="drillCombo">Combo a repetir <small>(vacío = el coach elige uno por round)</small></label>
+          <input type="text" id="drillCombo" maxlength="40" placeholder="Ej: 1 2 3 2   ·   sj 2 3" autocomplete="off" autocapitalize="none">
+          <p class="hint-line" id="drillComboHint"></p>
+        </div>
 
         <h3>Ritmo del coach</h3>
         <div class="seg" role="radiogroup" aria-label="Ritmo">
@@ -246,6 +274,30 @@
       <label class="switch"><input type="checkbox" id="warn10"><span class="track"></span><span class="lbl">Aviso de 10 segundos <small>(clap doble antes de que termine el round)</small></span></label>
       <label class="switch coach-only"><input type="checkbox" id="announce"><span class="track"></span><span class="lbl">Coach anuncia “Round 2”, “Último round”</span></label>
       <label class="switch"><input type="checkbox" id="vibrate"><span class="track"></span><span class="lbl">Vibración <small>(celular)</small></span></label>
+
+      <h3>Música</h3>
+      <p class="hint-line">Elegí canciones de tu dispositivo: suenan durante el entrenamiento y bajan solas cuando habla el coach o suena la campana. No se suben a ningún lado.</p>
+      <div class="row wrap music-row">
+        <label class="btn btn-small file-btn">Elegir canciones<input type="file" id="musicFiles" accept="audio/*" multiple hidden></label>
+        <button type="button" id="btnMusicPrev" class="btn btn-small" aria-label="Canción anterior">⏮</button>
+        <button type="button" id="btnMusicToggle" class="btn btn-small" aria-label="Reproducir o pausar">▶</button>
+        <button type="button" id="btnMusicNext" class="btn btn-small" aria-label="Canción siguiente">⏭</button>
+      </div>
+      <p class="hint-line" id="musicNow">Todavía no elegiste canciones.</p>
+      <div class="field">
+        <label for="musicVolume">Volumen música</label>
+        <input type="range" id="musicVolume" min="0" max="1" step="0.05">
+      </div>
+      <div class="field">
+        <label>Cuándo suena</label>
+        <div class="seg" role="radiogroup" aria-label="Cuándo suena la música">
+          <label><input type="radio" name="musicWhen" value="rounds"><span>Solo en los rounds</span></label>
+          <label><input type="radio" name="musicWhen" value="always"><span>Todo el tiempo</span></label>
+        </div>
+      </div>
+      <label class="switch"><input type="checkbox" id="musicDuck"><span class="track"></span><span class="lbl">Bajar la música cuando habla el coach <small>(y cuando suena la campana)</small></span></label>
+      <label class="switch"><input type="checkbox" id="mixAudio"><span class="track"></span><span class="lbl">Mezclar con otra app de música <small>(iPhone; con el celular en silencio no suena nada)</small></span></label>
+      <p class="hint-line">Si usás Spotify u otra app, el navegador puede pausarla cuando suena la campana o habla el coach; por eso conviene cargar tus canciones acá.</p>
     </section>
 
     <!-- ============ RANKING ============ -->
@@ -315,13 +367,40 @@
   </form>
 </dialog>
 
+<!-- ============ PROGRESO ============ -->
+<dialog id="progressDialog" class="wide">
+  <div class="prog">
+    <div class="card-head">
+      <h2>📈 Tu progreso</h2>
+      <button type="button" class="icon-btn small" id="btnProgressClose" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="tiles" id="progTiles"></div>
+    <h3>Rounds por semana</h3>
+    <div class="weekbars" id="progWeeks"></div>
+    <h3>Últimas 12 semanas</h3>
+    <div class="heat-wrap"><div class="heat" id="progHeat" aria-label="Calendario de entrenamientos"></div>
+      <div class="heat-legend"><span>menos</span><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>más</span></div></div>
+    <h3>Récords</h3>
+    <ul class="records" id="progRecords"></ul>
+    <h3>Últimos entrenamientos</h3>
+    <ol class="hist" id="progHistory"></ol>
+    <div class="row wrap prog-actions">
+      <button type="button" id="btnCsv" class="btn btn-small">⬇ Descargar CSV</button>
+      <button type="button" id="btnClearHistory" class="btn btn-small">Borrar historial</button>
+    </div>
+    <p class="hint-line">El historial se guarda en este navegador. Si borrás los datos del sitio, se pierde.</p>
+  </div>
+</dialog>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="js/config.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="js/combos.js"></script>
+<script src="js/stats.js"></script>
 <script src="js/audio.js"></script>
+<script src="js/music.js"></script>
 <script src="js/voice.js"></script>
 <script src="js/timer.js"></script>
 <script src="js/coach.js"></script>

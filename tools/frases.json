@@ -218,5 +218,15 @@
   "key": "ritmo-normal",
   "text": "ritmo normal",
   "say": "ritmo normal"
+ },
+ {
+  "key": "otra",
+  "text": "otra",
+  "say": "otra"
+ },
+ {
+  "key": "combo",
+  "text": "combo",
+  "say": "combo"
  }
 ]

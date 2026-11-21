@@ -17,6 +17,7 @@
     let round = 1;
     let comboState = { recent: [], lastMove: '' };
     let burstUntil = 0, burstCooldown = 0, burstEndPending = false;
+    let rep = {};                       // ronda «Repetición»: el combo que se repite y cuántas veces va
 
     const schedule = (ms) => { clearTimeout(timer); timer = setTimeout(step, ms); };
 
@@ -45,9 +46,13 @@
       if (rem < 2200) return; // no arrancamos un llamado que no llegaría a terminarse
       const myGen = gen;
       const nowTs = Date.now();
+      const rt = s.roundType || 'sombra';
+      const callStyle = rt === 'manoplas' ? 'numeros' : s.callStyle;   // las manoplas se cantan con números
+      if (rt === 'repeticion') return stepRepeat(s, callStyle, myGen);
 
-      // --- Impredecible: ráfagas de "ritmo alto" de 10 o 15 s ---
-      if (s.mode === 'sparring') {
+      // --- Impredecible (y bolsa): ráfagas de "ritmo alto" de 10 o 15 s ---
+      const bursts = rt === 'bolsa' || (s.mode === 'sparring' && rt !== 'reflejos' && rt !== 'defensa');
+      if (bursts) {
         if (burstUntil && nowTs >= burstUntil && !burstEndPending) burstEndPending = true;
         if (burstEndPending) {
           burstEndPending = false; burstUntil = 0;
@@ -75,12 +80,13 @@
       const opts = {
         level: s.level, mode: s.mode,
         defense: s.defense, movement: s.movement, body: s.body,
-        stance: s.stance, style: s.callStyle, slip: s.slipStyle, rate,
-        maxSpeechMs: 4200,
+        stance: s.stance, style: callStyle, slip: s.slipStyle, rate,
+        maxSpeechMs: rt === 'reflejos' ? 2200 : 4200,
+        drill: rt,
       };
       if (inBurst) { opts.maxPunches = 3; opts.noMovement = true; opts.defense = false; }
       const tokens = Combos.next(opts, comboState);
-      const desc = Combos.describe(tokens, { stance: s.stance, style: s.callStyle, slip: s.slipStyle });
+      const desc = Combos.describe(tokens, { stance: s.stance, style: callStyle, slip: s.slipStyle });
       const est = Combos.estimateSpeechMs(desc.speech, rate);
       deps.onCall(desc, tokens);
 
@@ -90,7 +96,36 @@
         let scale = paceScale(s);
         if (inBurst) scale *= 0.6;
         if (s.mode === 'sparring') scale *= rnd(0.8, 1.35);
+        if (rt === 'reflejos') {
+          // a destiempo: lo que tarda en hacerse + una pausa al azar, para que no se pueda anticipar
+          schedule(Combos.executionMs(tokens, pace) * 0.8 + pace.resetMs * rnd(0.25, 1.7) * paceScale(s));
+          return;
+        }
         schedule(Combos.gapMs(tokens, pace, scale));
+      });
+    }
+
+
+    /* Repetición: se canta el combo entero al principio y cada 6 veces; el resto, solo «otra». */
+    function stepRepeat(s, callStyle, myGen) {
+      const rate = voiceRate(s, false);
+      if (!rep.tokens) {
+        const parsed = s.combo ? Combos.parseCombo(s.combo) : null;
+        rep.tokens = parsed && parsed.ok ? parsed.tokens
+          : Combos.drillCombo({ level: s.level, defense: s.defense, body: s.body, stance: s.stance, style: callStyle, slip: s.slipStyle, rate, maxSpeechMs: 4200 });
+        rep.desc = Combos.describe(rep.tokens, { stance: s.stance, style: callStyle, slip: s.slipStyle });
+        rep.count = 0;
+      }
+      const first = rep.count === 0, full = first || rep.count % 6 === 0;
+      rep.count++;
+      deps.onCall(rep.desc, rep.tokens, { rep: rep.count });
+      const text = full ? (first ? 'combo, ' : '') + rep.desc.speech : 'otra';
+      const parts = full ? (first ? ['combo'].concat(rep.desc.parts) : rep.desc.parts) : ['otra'];
+      const est = full ? Combos.estimateSpeechMs(text, rate) : 450;
+      say(text, s, rate, est, parts).then(() => {
+        if (!active || paused || gen !== myGen) return;
+        const pace = Config.PACES[s.pace] || Config.PACES.normal;
+        schedule(Combos.gapMs(rep.tokens, pace, paceScale(s)));
       });
     }
 
@@ -100,6 +135,7 @@
         active = true; paused = false; gen++;
         round = info.round || 1;
         burstUntil = 0; burstEndPending = false;
+        rep = {};
         burstCooldown = Date.now() + rnd(15000, 30000);
         deps.onBurst(false, 0);
         const myGen = gen;

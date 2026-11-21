@@ -161,13 +161,15 @@
     const boost = mode === 'sparring' ? 1.6 : 1;
 
     // llamados sueltos: un paso o una defensa ("reflejos")
-    if (o.movement && !o.noMovement && rng() < 0.04 * boost) return [pickMove(rng, o)];
-    if (o.defense && rng() < 0.04 * boost) return [DEFS[Math.floor(rng() * DEFS.length)]];
+    if (!o.minPunches) {
+      if (o.movement && !o.noMovement && rng() < 0.04 * boost) return [pickMove(rng, o)];
+      if (o.defense && rng() < 0.04 * boost) return [DEFS[Math.floor(rng() * DEFS.length)]];
+    }
 
     const allowed = L === 1 ? [1, 2, 3] : [1, 2, 3, 4, 5, 6];
     let [minP, maxP] = LEN_RANGE[L];
     maxP = Math.min(maxP, o.maxPunches || 6);
-    minP = Math.min(minP, maxP);
+    minP = Math.min(Math.max(minP, o.minPunches || 0), maxP);
     const lens = Object.keys(LEN_W[L]).map(Number).filter((n) => n >= minP && n <= maxP);
     const len = wpick(lens.length ? lens : [maxP], (n) => LEN_W[L][n] || 1, rng);
 
@@ -218,6 +220,69 @@
     return opts[Math.floor(rng() * opts.length)];
   }
 
+
+  /* ---------- tipos de ronda ---------- */
+  const ALLOWED = (L) => (L === 1 ? [1, 2, 3] : [1, 2, 3, 4, 5, 6]);
+
+  /* Defensa y contra: SIEMPRE empieza con un esquive/agachada y sigue con golpes que salen de esa posición. */
+  function defenseDrill(o, rng) {
+    const L = o.level, allowed = ALLOWED(L);
+    const [minE, maxE0] = { 1: [1, 2], 2: [1, 3], 3: [2, 4] }[L] || [1, 3];
+    const maxE = Math.max(1, Math.min(maxE0, o.maxPunches || 6));
+    const ids = { sj: 'slipJab', sc: 'slipCross', d: 'duck' };
+    for (let attempt = 0; attempt < 40; attempt++) {
+      const d = wpick(['sj', 'sc', 'd'], (x) => (x === 'd' ? 0.6 : 1) * (x === o._lastDef && attempt < 20 ? 0.15 : 1), rng);
+      const cand = COUNTER[ids[d]].filter((n) => allowed.includes(n));
+      if (!cand.length) continue;
+      const seq = [wpick(cand, (n) => W[n], rng)];
+      const len = minE + Math.floor(rng() * (Math.max(minE, maxE) - minE + 1));
+      while (seq.length < len) {
+        const prev = seq[seq.length - 1];
+        const nx = NEXT[prev].filter((n) => allowed.includes(n));
+        seq.push(wpick(nx, (n) => W[n] * (HAND[n] === HAND[prev] ? 0.5 : 1), rng));
+      }
+      const t = [d].concat(seq.map(String));
+      if (validate(t).ok && fits(t, o)) return t;
+    }
+    return ['sj', '2'];
+  }
+
+  /* Reflejos: una orden suelta y corta (un golpe, dos golpes, una defensa o un paso). */
+  function reflexCall(o, state, rng) {
+    const L = o.level, allowed = ALLOWED(L);
+    const wDef = o.defense ? 0.28 : 0, wMove = o.movement ? 0.14 : 0, wPair = L >= 2 ? 0.16 : 0;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const r = rng();
+      let t;
+      if (r < wDef) t = [DEFS[Math.floor(rng() * DEFS.length)]];
+      else if (r < wDef + wMove) t = [pickMove(rng, o)];
+      else if (r < wDef + wMove + wPair) {
+        const a = wpick(allowed, (n) => ({ 1: 40, 2: 25, 3: 12, 4: 8, 5: 8, 6: 8 }[n]), rng);
+        const b = wpick(NEXT[a].filter((n) => allowed.includes(n)), (n) => W[n], rng);
+        t = [String(a), String(b)];
+      } else t = [String(wpick(allowed, (n) => ({ 1: 40, 2: 30, 3: 14, 4: 6, 5: 5, 6: 5 }[n]), rng))];
+      const k = t.join(' ');
+      if (validate(t).ok && !(state.recent || []).slice(-2).includes(k)) return t;
+    }
+    return ['1'];
+  }
+
+  /* Combo para «Repetición» cuando el usuario no puso uno: de la biblioteca, largo suficiente y sin pasos. */
+  function drillCombo(o, rng) {
+    rng = rng || Math.random;
+    const q = Object.assign({}, o, { movement: false, noMovement: true, minPunches: o.level === 1 ? 2 : 3 });
+    return pickCurated(q, rng) || ['1', '2', '3', '2'];
+  }
+
+  /* Lo que escribe el usuario: «1 2 3 2», «1-2-3-2», «sj 2 3»… → tokens validados. */
+  function parseCombo(str) {
+    const tokens = String(str || '').toLowerCase().split(/[\s,;\-–—>·]+/).filter(Boolean);
+    if (!tokens.length) return { ok: false, tokens: [], errors: ['vacío'] };
+    if (tokens.length > 10) return { ok: false, tokens, errors: ['demasiado largo'] };
+    const v = validate(tokens);
+    return { ok: v.ok, tokens, errors: v.errors };
+  }
+
   /* ¿Lo que dice la voz entra en el tiempo máximo? (frases largas no se pueden seguir) */
   function fits(tokens, o) {
     if (!o.maxSpeechMs) return true;
@@ -233,6 +298,7 @@
       (o.movement && !o.noMovement ? true : !c.hasMove) &&
       (o.defense || !c.hasDef) &&
       c.punches <= (o.maxPunches || 6) &&
+      c.punches >= (o.minPunches || 0) &&
       !(o._lastMove && c.tokens.includes(o._lastMove)) &&   // no repetir el mismo paso dos veces seguidas
       // los combos de nivel inferior pesan menos
       (c.level === o.level || rng() < 0.35)
@@ -252,6 +318,21 @@
     state = state || { recent: [], lastMove: '' };
     state.recent = state.recent || [];
     o._lastMove = state.lastMove;
+    o._lastDef = state.lastDef;
+
+    // Cada tipo de ronda ajusta lo que se puede cantar.
+    if (o.drill === 'manoplas') { o.movement = false; o.minPunches = Math.max(o.minPunches || 0, 2); }
+    if (o.drill === 'bolsa') { o.defense = false; o.minPunches = Math.max(o.minPunches || 0, o.level === 1 ? 2 : 3); }
+
+    if (o.drill === 'defensa' || o.drill === 'reflejos') {
+      const tk = o.drill === 'defensa' ? defenseDrill(o, rng) : reflexCall(o, state, rng);
+      const kk = tk.join(' ');
+      state.recent.push(kk);
+      if (state.recent.length > 4) state.recent.shift();
+      const d0 = tk.find((t) => t === 'sj' || t === 'sc' || t === 'd'); if (d0) state.lastDef = d0;
+      const mv0 = tk.find((t) => t[0] === 'm'); if (mv0) state.lastMove = mv0;
+      return tk;
+    }
 
     const pCur = { normal: 0.65, intensity: 0.55, sparring: 0.35 }[o.mode] ?? 0.6;
     let tokens = null, k = '';
@@ -368,7 +449,7 @@
       .concat(NUM_WORDS, ['esquive al jab', 'esquive al cross', 'esquive derecha', 'esquive izquierda', 'derecha', 'izquierda', 'agachada', 'agachada al gancho'],
         Object.keys(MOVES).map((k) => MOVES[k].say));
     for (let i = 1; i <= 15; i++) list.push('raund ' + i);
-    list.push('último raund', 'ritmo alto, diez segundos', 'ritmo alto, quince segundos', 'ritmo normal');
+    list.push('último raund', 'ritmo alto, diez segundos', 'ritmo alto, quince segundos', 'ritmo normal', 'otra', 'combo');
     return list.map((t) => ({ key: slug(t), text: t, say: phonetic(t) }));
   }
 
@@ -397,6 +478,6 @@
     return (executionMs(tokens, pace) + pace.resetMs) * (scale || 1);
   }
 
-  Coach.Combos = { parse, validate, CURATED, next, describe, estimateSpeechMs, executionMs, gapMs, generate, SAME_HAND_OK, slug, allPhrases };
+  Coach.Combos = { parse, parseCombo, validate, CURATED, next, defenseDrill, reflexCall, drillCombo, describe, estimateSpeechMs, executionMs, gapMs, generate, SAME_HAND_OK, slug, allPhrases };
   if (typeof module !== 'undefined' && module.exports) module.exports = Coach.Combos;
 })(typeof window !== 'undefined' ? window : globalThis);

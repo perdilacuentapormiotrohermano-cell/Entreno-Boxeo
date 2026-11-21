@@ -3,7 +3,7 @@
 Reloj de boxeo + coach por voz que canta combinaciones **realizables**.
 
 ## Qué tiene
-- **📋 Rutina** (nuevo): una sesión completa por bloques, cada uno con sus rounds, tiempos y tipo (con coach o solo reloj): calentamiento → técnica → sparring → saco → abdominales → estiramiento. Trae 3 rutinas listas; podés editar, reordenar, agregar bloques y guardarlas como tuyas. Los puntos cuentan solo los rounds con coach.
+- **📋 Rutina** (nuevo): una sesión completa por bloques, cada uno con sus rounds, tiempos y tipo (con coach o solo reloj): calentamiento → técnica → sparring → saco → abdominales → vuelta a la calma. Trae 4 rutinas listas; podés editar, reordenar, agregar bloques y guardarlas como tuyas. Los puntos cuentan solo los rounds con coach.
 - **⏱ Reloj**: rounds, duración, descanso y preparación; campana al empezar y al terminar el round, aviso de 10 s, beeps 3‑2‑1. Sin voz.
 - **🎙 Coach**: canta golpes (jab, cross, ganchos, uppers, al cuerpo), esquives y pasos. Modos **Clásico**, **Impredecible** (rounds de duración variable + ráfagas de "ritmo alto") y **Progresivo** (cada round más rápido y con menos descanso).
 - Niveles Básico / Intermedio / Avanzado, ritmo (Relajado → Máximo), guardia ortodoxo/zurdo, llamar con nombres o números (1‑6).
@@ -11,12 +11,27 @@ Reloj de boxeo + coach por voz que canta combinaciones **realizables**.
 - Ranking: **mundial**, **de tu grupo de amigos** (código compartido), y tus entrenos; por categoría y por período (hoy / esta semana desde el lunes / siempre). Avatar, y botón para **compartir una imagen** con tu resultado.
 - Voz: usa primero las voces «Natural» del dispositivo (⭐) o un **pack de audios con voz neuronal** (ver abajo). Funciona como app instalable (PWA).
 
+## Novedades de esta versión
+- **📈 Progreso** (botón arriba a la derecha): racha de días seguidos, rounds y minutos de la semana (vs. la anterior), barras de 8 semanas, calendario de 12 semanas, récords y tus últimos entrenamientos con botón **Repetir**. Cuenta también los entrenos de Reloj y de Rutina (no solo los de coach). Descargás todo en **CSV** o borrás el historial. Se guarda en el navegador.
+- **Tipo de ronda** (solo en Coach, y por bloque en Rutina):
+  - *Sombra*: lo de siempre.
+  - *Manoplas*: todo con números, sin pasos, mínimo 2 golpes (como te las canta el entrenador).
+  - *Bolsa*: combos de 3+ golpes seguidos, con pasos y ráfagas de ritmo alto, sin esquives.
+  - *Defensa y contra*: cada llamado empieza con un esquive o agachada y sigue con golpes que salen de esa posición (esquive al jab → derecha; al cross → izquierda).
+  - *Repetición*: el coach canta un combo una vez y después solo dice «otra»; lo vuelve a cantar entero cada 6 repeticiones. Podés escribir tu propio combo (`1 2 3 2`, `1-2-3-2`, `sj 2 3`…): se valida, y si no se puede hacer te avisa y el coach elige uno. Vacío = uno distinto por round.
+  - *Reflejos*: órdenes sueltas y cortas (un golpe, dos, una defensa o un paso) con pausas irregulares, para que no puedas anticiparte; la caja destella con el color de la orden.
+- **Calentamiento y vuelta a la calma guiados** (3, 5 u 8 min; en Reloj, Coach y como bloques de Rutina): 8 ejercicios de calentamiento y 7 de estiramiento, cada uno con su nombre en pantalla y anunciado por voz (en Reloj no hay voz). Sin campana entre ejercicios.
+- **Música propia**: elegís canciones de tu dispositivo (no se suben a ningún lado). Suenan solo en los rounds o todo el tiempo, y **bajan solas** mientras habla el coach o suena la campana. Límites: en iPhone el volumen de un audio no se puede bajar por código, y una app de música externa (Spotify, etc.) no se puede controlar desde una página web: el navegador puede pausarla cuando suena la campana.
+- Rutina nueva: «Técnica y defensa».
+
 ## Archivos
 ```
 index.html            estructura
 css/styles.css        diseño
 js/config.js          modos, niveles, ritmos, presets y fórmula de puntos
-js/combos.js          biblioteca de combos + generador + VALIDADOR
+js/combos.js          biblioteca de combos + generador + VALIDADOR + tipos de ronda
+js/stats.js           estadísticas del historial (racha, semanas, récords, CSV)
+js/music.js           música propia con bajada automática
 js/coach.js           cuándo y qué canta el coach
 js/timer.js           motor del reloj (fases)
 js/audio.js           campana, aviso 10 s, beeps
@@ -26,6 +41,7 @@ js/firebase-config.js TU configuración de Firebase
 js/ui.js, main.js     pantalla
 firestore.rules       reglas de seguridad del ranking
 tests/combos.test.js  prueba de que todo lo cantado es posible
+tests/stats.test.js   prueba de las estadísticas
 tools/generar_voz.py  genera el pack de audios (voz neuronal)
 tools/frases.json     frases que dice el coach
 ```

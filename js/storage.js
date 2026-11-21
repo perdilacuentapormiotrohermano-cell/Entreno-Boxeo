@@ -44,8 +44,15 @@
     addHistory(entry) {
       const list = Storage.getHistory();
       list.push(entry);
-      write(KEYS.history, list.slice(-500));
+      let out = list.slice(-1000);
+      // si el navegador se queda sin lugar, se descartan los «planes» viejos (lo que usa «Repetir») y se reintenta
+      if (!write(KEYS.history, out)) {
+        out = out.map((e, i) => (i < out.length - 20 && e.plan ? Object.assign({}, e, { plan: undefined }) : e));
+        if (!write(KEYS.history, out)) write(KEYS.history, out.slice(-300));
+      }
     },
+
+    clearHistory() { write(KEYS.history, []); },
 
     /* Trae lo que había en la versión anterior ("boxingHistory") una sola vez. */
     migrateLegacy() {
