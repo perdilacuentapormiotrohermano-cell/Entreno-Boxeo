@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0c0e12">
+<meta name="description" content="Reloj de boxeo y coach por voz que canta combinaciones realizables.">
+<title>Coach Boxeo</title>
+
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body data-kind="coach" data-phase="idle" data-state="idle">
+
+<header class="topbar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="42 15" stroke-linecap="round"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/></svg>
+    <span>Coach <b>Boxeo</b></span>
+  </div>
+
+  <div class="seg kind-seg" role="radiogroup" aria-label="Qué querés usar">
+    <label><input type="radio" name="kind" value="clock"><span>⏱ Reloj</span></label>
+    <label><input type="radio" name="kind" value="coach"><span>🎙 Coach</span></label>
+    <label><input type="radio" name="kind" value="routine"><span>📋 Rutina</span></label>
+  </div>
+
+  <button id="btnFullscreen" class="icon-btn" type="button" aria-label="Pantalla completa" title="Pantalla completa (para verlo de lejos)">⛶</button>
+</header>
+
+<main class="layout">
+
+  <!-- ============ RELOJ ============ -->
+  <section class="stage" id="stage" aria-label="Reloj de entrenamiento">
+    <div class="stage-head">
+      <span class="phase-pill" id="phaseLabel">LISTO</span>
+      <span class="round-label" id="roundLabel">ROUND 1 / 3</span>
+    </div>
+
+    <div class="dial">
+      <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="ring-bg" cx="60" cy="60" r="54"></circle>
+        <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="54"></circle>
+      </svg>
+      <div class="dial-center">
+        <div class="time" id="timeText" role="timer">03:00</div>
+        <div class="subtime" id="subText">Tocá COMENZAR</div>
+      </div>
+    </div>
+
+    <div class="dots" id="roundDots" aria-hidden="true"></div>
+
+    <div class="callout coach-only" id="callout">
+      <div class="burst" id="burstBadge" hidden>🔥 RITMO ALTO · <span id="burstLeft">10</span>s</div>
+      <div class="chips" id="comboChips" aria-live="polite">
+        <span class="hint">Acá vas a ver lo que canta el coach</span>
+      </div>
+      <div class="history" id="comboHistory" aria-hidden="true"></div>
+    </div>
+
+    <div class="controls">
+      <button id="btnMain" class="btn btn-primary" type="button">COMENZAR</button>
+      <button id="btnStop" class="btn btn-ghost" type="button" disabled>DETENER</button>
+    </div>
+    <p class="kbd-hint">Barra espaciadora: comenzar / pausar / reanudar</p>
+  </section>
+
+  <div class="side">
+
+    <!-- ============ AJUSTES ============ -->
+    <section class="card" id="settings">
+      <h2>Ajustes</h2>
+
+      <div class="presets single-only" id="presets" aria-label="Formatos rápidos"></div>
+
+      <div class="grid2">
+        <div class="field single-only">
+          <label for="roundsInput">Rounds</label>
+          <div class="stepper" data-stepper="rounds" data-lock>
+            <button type="button" data-dir="-1" aria-label="Menos rounds">−</button>
+            <input id="roundsInput" inputmode="numeric" autocomplete="off">
+            <button type="button" data-dir="1" aria-label="Más rounds">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="prepInput">Preparación</label>
+          <div class="stepper" data-stepper="prepSec" data-lock>
+            <button type="button" data-dir="-1" aria-label="Menos preparación">−</button>
+            <input id="prepInput" inputmode="numeric" autocomplete="off">
+            <button type="button" data-dir="1" aria-label="Más preparación">+</button>
+          </div>
+        </div>
+        <div class="field single-only">
+          <label for="workInput">Duración del round</label>
+          <div class="stepper" data-stepper="workSec" data-lock>
+            <button type="button" data-dir="-1" aria-label="Menos duración">−</button>
+            <input id="workInput" inputmode="numeric" autocomplete="off">
+            <button type="button" data-dir="1" aria-label="Más duración">+</button>
+          </div>
+        </div>
+        <div class="field single-only">
+          <label for="restInput">Descanso</label>
+          <div class="stepper" data-stepper="restSec" data-lock>
+            <button type="button" data-dir="-1" aria-label="Menos descanso">−</button>
+            <input id="restInput" inputmode="numeric" autocomplete="off">
+            <button type="button" data-dir="1" aria-label="Más descanso">+</button>
+          </div>
+        </div>
+      </div>
+      <p class="total" id="totalPreview"></p>
+
+      <!-- ---- solo Rutina ---- -->
+      <div class="routine-only" id="routinePanel">
+        <h3>Rutina</h3>
+        <select id="routineSelect" aria-label="Elegir rutina"></select>
+        <div class="field">
+          <label for="routineName">Nombre de la rutina</label>
+          <input type="text" id="routineName" maxlength="40" data-lock>
+        </div>
+        <div class="blocks" id="blocks"></div>
+        <div class="row wrap">
+          <button type="button" id="btnAddBlock" class="btn btn-small" data-lock>+ Agregar bloque</button>
+          <button type="button" id="btnRoutineSave" class="btn btn-small">Guardar como mía</button>
+          <button type="button" id="btnRoutineDelete" class="btn btn-small" hidden>Eliminar</button>
+        </div>
+        <p class="hint-line" id="routineHint"></p>
+      </div>
+
+      <!-- ---- solo Coach ---- -->
+      <div class="coach-only">
+       <div class="single-only">
+        <h3>Modo</h3>
+        <div class="modes" role="radiogroup" aria-label="Modo de entrenamiento">
+          <label class="mode" data-lock><input type="radio" name="mode" value="normal"><span><b>Clásico</b><small>Combinaciones estables y ritmo constante.</small></span></label>
+          <label class="mode" data-lock><input type="radio" name="mode" value="sparring"><span><b>Impredecible</b><small>Duración variable y presión aleatoria.</small></span></label>
+          <label class="mode" data-lock><input type="radio" name="mode" value="intensity"><span><b>Progresivo</b><small>Cada round sube la velocidad y baja el descanso.</small></span></label>
+        </div>
+
+        <h3>Nivel de combinaciones</h3>
+        <div class="seg" role="radiogroup" aria-label="Nivel">
+          <label><input type="radio" name="level" value="1"><span>Básico</span></label>
+          <label><input type="radio" name="level" value="2"><span>Intermedio</span></label>
+          <label><input type="radio" name="level" value="3"><span>Avanzado</span></label>
+        </div>
+        <p class="hint-line" id="levelHint"></p>
+
+        <h3>Ritmo del coach</h3>
+        <div class="seg" role="radiogroup" aria-label="Ritmo">
+          <label><input type="radio" name="pace" value="relajado"><span>Relajado</span></label>
+          <label><input type="radio" name="pace" value="normal"><span>Normal</span></label>
+          <label><input type="radio" name="pace" value="rapido"><span>Rápido</span></label>
+          <label><input type="radio" name="pace" value="maximo"><span>Máximo</span></label>
+        </div>
+        <p class="hint-line">Es el tiempo que te da entre un llamado y el siguiente para ejecutarlo.</p>
+       </div>
+
+        <div class="field">
+          <label for="voiceRate">Velocidad de la voz <output id="rateOut">1.00×</output></label>
+          <input type="range" id="voiceRate" min="0.7" max="1.5" step="0.05">
+        </div>
+
+        <div class="grid2">
+          <div>
+            <h3>Guardia</h3>
+            <div class="seg" role="radiogroup" aria-label="Guardia">
+              <label><input type="radio" name="stance" value="ortodoxo"><span>Ortodoxo</span></label>
+              <label><input type="radio" name="stance" value="zurdo"><span>Zurdo</span></label>
+            </div>
+          </div>
+          <div>
+            <h3>Llamar con</h3>
+            <div class="seg" role="radiogroup" aria-label="Estilo de llamado">
+              <label><input type="radio" name="callStyle" value="nombres"><span>Nombres</span></label>
+              <label><input type="radio" name="callStyle" value="numeros"><span>Números</span></label>
+            </div>
+          </div>
+        </div>
+
+        <h3>Incluir</h3>
+        <label class="switch"><input type="checkbox" id="defense"><span class="track"></span><span class="lbl">Defensa <small>(esquive, agachada)</small></span></label>
+        <label class="switch"><input type="checkbox" id="movement"><span class="track"></span><span class="lbl">Pasos <small>(izquierda, derecha, atrás, adelante)</small></span></label>
+        <label class="switch"><input type="checkbox" id="body"><span class="track"></span><span class="lbl">Golpes al cuerpo <small>(desde nivel Intermedio)</small></span></label>
+
+        <div class="field" id="slipField">
+          <label>Cómo canta el esquive</label>
+          <div class="seg" role="radiogroup" aria-label="Cómo canta el esquive">
+            <label><input type="radio" name="slipStyle" value="ambos"><span>Golpe y lado</span></label>
+            <label><input type="radio" name="slipStyle" value="golpe"><span>Solo golpe</span></label>
+            <label><input type="radio" name="slipStyle" value="direccion"><span>Solo lado</span></label>
+          </div>
+          <p class="hint-line" id="slipHint"></p>
+        </div>
+        <div class="field">
+          <label for="voiceMode">Tipo de voz</label>
+          <select id="voiceMode">
+            <option value="tts">Voz del dispositivo</option>
+            <option value="clips">Pack de audios (voz neuronal)</option>
+          </select>
+          <p class="hint-line" id="clipsHint"></p>
+        </div>
+        <div class="field">
+          <label for="voiceSelect">Voz del dispositivo</label>
+          <div class="row">
+            <select id="voiceSelect"></select>
+            <button type="button" id="btnTestVoice" class="btn btn-small">Probar</button>
+          </div>
+          <p class="hint-line" id="voiceHint"></p>
+        </div>
+      </div>
+
+      <!-- ---- sonido (reloj y coach) ---- -->
+      <h3>Sonido</h3>
+      <div class="field">
+        <label for="bellSound">Campana</label>
+        <div class="row">
+          <select id="bellSound">
+            <option value="file">Tu campana (campana.mp3)</option>
+            <option value="synth">Campana clásica (sintetizada)</option>
+            <option value="horn">Bocina de gimnasio</option>
+          </select>
+          <button type="button" id="btnTestBell" class="btn btn-small">Probar</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="bellVolume">Volumen campana</label>
+        <input type="range" id="bellVolume" min="0" max="1" step="0.05">
+      </div>
+      <div class="field coach-only">
+        <label for="voiceVolume">Volumen voz</label>
+        <input type="range" id="voiceVolume" min="0" max="1" step="0.05">
+      </div>
+      <div class="field">
+        <label>Campanadas al terminar el round</label>
+        <div class="seg" role="radiogroup" aria-label="Campanadas al terminar">
+          <label><input type="radio" name="endDings" value="1"><span>1</span></label>
+          <label><input type="radio" name="endDings" value="2"><span>2</span></label>
+          <label><input type="radio" name="endDings" value="3"><span>3</span></label>
+        </div>
+      </div>
+      <label class="switch"><input type="checkbox" id="warn10"><span class="track"></span><span class="lbl">Aviso de 10 segundos <small>(clap doble antes de que termine el round)</small></span></label>
+      <label class="switch coach-only"><input type="checkbox" id="announce"><span class="track"></span><span class="lbl">Coach anuncia “Round 2”, “Último round”</span></label>
+      <label class="switch"><input type="checkbox" id="vibrate"><span class="track"></span><span class="lbl">Vibración <small>(celular)</small></span></label>
+    </section>
+
+    <!-- ============ RANKING ============ -->
+    <section class="card" id="ranking">
+      <div class="card-head">
+        <h2>🏆 Ranking</h2>
+        <button type="button" id="btnRefresh" class="icon-btn small" aria-label="Actualizar ranking" title="Actualizar">↻</button>
+      </div>
+
+      <div class="seg" role="radiogroup" aria-label="Qué ranking ver">
+        <label><input type="radio" name="scope" value="global"><span>Mundial</span></label>
+        <label><input type="radio" name="scope" value="group"><span>Mi grupo</span></label>
+        <label><input type="radio" name="scope" value="local"><span>Míos</span></label>
+      </div>
+
+      <div class="rank-filters">
+        <div class="chips-row" id="rankFilters" role="radiogroup" aria-label="Categoría"></div>
+        <select id="rankPeriod" aria-label="Período">
+          <option value="all">Siempre</option>
+          <option value="week">Esta semana (desde el lunes)</option>
+          <option value="today">Hoy</option>
+        </select>
+      </div>
+
+      <ol class="rank-list" id="rankList"></ol>
+      <p class="hint-line" id="rankStatus"></p>
+
+      <div class="field">
+        <label for="playerName">Tu nombre en el ranking</label>
+        <input type="text" id="playerName" maxlength="20" placeholder="Ej: Kito" autocomplete="nickname">
+      </div>
+      <div class="field">
+        <label>Tu avatar</label>
+        <div class="avatars" id="avatarPick" role="radiogroup" aria-label="Avatar"></div>
+      </div>
+      <div class="field">
+        <label for="groupCode">Código de grupo <small>(para competir solo con tus amigos)</small></label>
+        <input type="text" id="groupCode" maxlength="20" placeholder="Ej: gym-pepe" autocapitalize="none" autocomplete="off">
+        <p class="hint-line">Inventá un código y compartilo: quienes lo pongan aparecen en «Mi grupo».</p>
+      </div>
+      <p class="hint-line">Puntos = (10 por minuto + 20 por round) × modo (1 · 1,25 · 1,5) × nivel (1 · 1,15 · 1,3). Solo cuenta el modo Coach.</p>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============ FIN DEL ENTRENAMIENTO ============ -->
+<dialog id="finishDialog">
+  <form method="dialog" class="finish">
+    <h2 id="finishTitle">¡Entrenamiento terminado!</h2>
+    <div class="stats">
+      <div><b id="stRounds">3</b><span>rounds</span></div>
+      <div><b id="stTime">9:00</b><span>trabajados</span></div>
+      <div class="pts"><b id="stPoints">0</b><span>puntos</span></div>
+    </div>
+    <p class="finish-meta" id="finishMeta"></p>
+    <p class="finish-note" id="finishNote"></p>
+    <div class="field" id="finishNameField">
+      <label for="finishName">Tu nombre en el ranking</label>
+      <input type="text" id="finishName" maxlength="20" placeholder="Ej: Kito">
+    </div>
+    <div class="finish-actions">
+      <button type="button" class="btn btn-primary" id="btnPublish">Subir al ranking</button>
+      <button type="button" class="btn btn-small" id="btnShare">📤 Compartir resultado</button>
+      <button value="close" class="btn btn-ghost">Cerrar</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/config.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/combos.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/timer.js"></script>
+<script src="js/coach.js"></script>
+<script src="js/ranking.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

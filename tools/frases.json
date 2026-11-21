@@ -1,0 +1,222 @@
+[
+ {
+  "key": "jab",
+  "text": "jab",
+  "say": "yab"
+ },
+ {
+  "key": "cross",
+  "text": "cross",
+  "say": "cros"
+ },
+ {
+  "key": "gancho-izquierdo",
+  "text": "gancho izquierdo",
+  "say": "gancho izquierdo"
+ },
+ {
+  "key": "gancho-derecho",
+  "text": "gancho derecho",
+  "say": "gancho derecho"
+ },
+ {
+  "key": "upper-izquierdo",
+  "text": "upper izquierdo",
+  "say": "áper izquierdo"
+ },
+ {
+  "key": "upper-derecho",
+  "text": "upper derecho",
+  "say": "áper derecho"
+ },
+ {
+  "key": "al-cuerpo",
+  "text": "al cuerpo",
+  "say": "al cuerpo"
+ },
+ {
+  "key": "uno",
+  "text": "uno",
+  "say": "uno"
+ },
+ {
+  "key": "dos",
+  "text": "dos",
+  "say": "dos"
+ },
+ {
+  "key": "tres",
+  "text": "tres",
+  "say": "tres"
+ },
+ {
+  "key": "cuatro",
+  "text": "cuatro",
+  "say": "cuatro"
+ },
+ {
+  "key": "cinco",
+  "text": "cinco",
+  "say": "cinco"
+ },
+ {
+  "key": "seis",
+  "text": "seis",
+  "say": "seis"
+ },
+ {
+  "key": "esquive-al-jab",
+  "text": "esquive al jab",
+  "say": "esquive al yab"
+ },
+ {
+  "key": "esquive-al-cross",
+  "text": "esquive al cross",
+  "say": "esquive al cros"
+ },
+ {
+  "key": "esquive-derecha",
+  "text": "esquive derecha",
+  "say": "esquive derecha"
+ },
+ {
+  "key": "esquive-izquierda",
+  "text": "esquive izquierda",
+  "say": "esquive izquierda"
+ },
+ {
+  "key": "derecha",
+  "text": "derecha",
+  "say": "derecha"
+ },
+ {
+  "key": "izquierda",
+  "text": "izquierda",
+  "say": "izquierda"
+ },
+ {
+  "key": "agachada",
+  "text": "agachada",
+  "say": "agachada"
+ },
+ {
+  "key": "agachada-al-gancho",
+  "text": "agachada al gancho",
+  "say": "agachada al gancho"
+ },
+ {
+  "key": "paso-izquierda",
+  "text": "paso izquierda",
+  "say": "paso izquierda"
+ },
+ {
+  "key": "paso-derecha",
+  "text": "paso derecha",
+  "say": "paso derecha"
+ },
+ {
+  "key": "paso-atras",
+  "text": "paso atrás",
+  "say": "paso atrás"
+ },
+ {
+  "key": "paso-adelante",
+  "text": "paso adelante",
+  "say": "paso adelante"
+ },
+ {
+  "key": "raund-1",
+  "text": "raund 1",
+  "say": "raund 1"
+ },
+ {
+  "key": "raund-2",
+  "text": "raund 2",
+  "say": "raund 2"
+ },
+ {
+  "key": "raund-3",
+  "text": "raund 3",
+  "say": "raund 3"
+ },
+ {
+  "key": "raund-4",
+  "text": "raund 4",
+  "say": "raund 4"
+ },
+ {
+  "key": "raund-5",
+  "text": "raund 5",
+  "say": "raund 5"
+ },
+ {
+  "key": "raund-6",
+  "text": "raund 6",
+  "say": "raund 6"
+ },
+ {
+  "key": "raund-7",
+  "text": "raund 7",
+  "say": "raund 7"
+ },
+ {
+  "key": "raund-8",
+  "text": "raund 8",
+  "say": "raund 8"
+ },
+ {
+  "key": "raund-9",
+  "text": "raund 9",
+  "say": "raund 9"
+ },
+ {
+  "key": "raund-10",
+  "text": "raund 10",
+  "say": "raund 10"
+ },
+ {
+  "key": "raund-11",
+  "text": "raund 11",
+  "say": "raund 11"
+ },
+ {
+  "key": "raund-12",
+  "text": "raund 12",
+  "say": "raund 12"
+ },
+ {
+  "key": "raund-13",
+  "text": "raund 13",
+  "say": "raund 13"
+ },
+ {
+  "key": "raund-14",
+  "text": "raund 14",
+  "say": "raund 14"
+ },
+ {
+  "key": "raund-15",
+  "text": "raund 15",
+  "say": "raund 15"
+ },
+ {
+  "key": "ultimo-raund",
+  "text": "último raund",
+  "say": "último raund"
+ },
+ {
+  "key": "ritmo-alto-diez-segundos",
+  "text": "ritmo alto, diez segundos",
+  "say": "ritmo alto, diez segundos"
+ },
+ {
+  "key": "ritmo-alto-quince-segundos",
+  "text": "ritmo alto, quince segundos",
+  "say": "ritmo alto, quince segundos"
+ },
+ {
+  "key": "ritmo-normal",
+  "text": "ritmo normal",
+  "say": "ritmo normal"
+ }
+]
