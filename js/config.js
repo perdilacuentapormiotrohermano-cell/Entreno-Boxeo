@@ -140,10 +140,6 @@
     voiceVolume: 1,
     warn10: true,
     vibrate: true,
-    musicVolume: 0.5,        // música propia (archivos del dispositivo)
-    musicDuck: true,         // baja la música cuando habla el coach o suena la campana
-    musicWhen: 'rounds',     // 'rounds' = solo en los rounds · 'always' = todo el entrenamiento
-    mixAudio: false,         // iPhone: mezclar con otra app de música
   };
 
   /* Puntos del ranking.

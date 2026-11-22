@@ -16,8 +16,6 @@
   let current = null;      // referencia fuerte: si el navegador la recolecta, onend nunca se dispara
   let pending = null;      // { resolve, timer, u }
   let onListChange = null;
-  const hooks = { speaking: null };     // (true|false) cuando el coach empieza / termina de hablar
-  const speaking = (b) => { if (hooks.speaking) hooks.speaking(b); };
 
   /* ---------- voces del dispositivo ---------- */
   const isNatural = (v) => /natural|neural|online|premium|enhanced|mejorada/i.test(v.name);
@@ -76,7 +74,7 @@
   function stopClips() {
     clipToken++;
     if (clipAudio) { try { clipAudio.pause(); } catch (e) {} clipAudio = null; }
-    if (clipResolve) { const r = clipResolve; clipResolve = null; speaking(false); r(); }
+    if (clipResolve) { const r = clipResolve; clipResolve = null; r(); }
   }
 
   function speakClips(parts, opts) {
@@ -86,10 +84,9 @@
     return new Promise((resolve) => {
       clipResolve = resolve;
       let i = 0;
-      speaking(true);
       const next = () => {
         if (token !== clipToken) return;
-        if (i >= parts.length) { clipResolve = null; speaking(false); resolve(); return; }
+        if (i >= parts.length) { clipResolve = null; resolve(); return; }
         const a = new Audio(CLIP_DIR + slug(parts[i++]) + '.mp3');
         clipAudio = a;
         a.volume = opts.volume == null ? 1 : opts.volume;
@@ -106,7 +103,7 @@
   /* ---------- API común ---------- */
   function cancel() {
     stopClips();
-    if (pending) { clearTimeout(pending.timer); const r = pending.resolve; pending = null; speaking(false); r(); }
+    if (pending) { clearTimeout(pending.timer); const r = pending.resolve; pending = null; r(); }
     current = null;
     if (synth) synth.cancel();
   }
@@ -130,7 +127,6 @@
         if (!pending || pending.u !== u) return;
         clearTimeout(pending.timer);
         pending = null;
-        speaking(false);
         resolve();
       };
       // Si el navegador no avisa que terminó (pasa en algunos motores), seguimos igual.
@@ -138,7 +134,6 @@
       pending = { resolve, u, timer: setTimeout(done, fallback) };
       u.onend = done;
       u.onerror = done;
-      speaking(true);
       synth.speak(u);
     });
   }
@@ -161,7 +156,7 @@
   }
 
   Coach.Voice = {
-    init, speak, say, cancel, unlock, loadClips, hooks,
+    init, speak, say, cancel, unlock, loadClips,
     list: spanishVoices,
     isNatural,
     clipsAvailable,

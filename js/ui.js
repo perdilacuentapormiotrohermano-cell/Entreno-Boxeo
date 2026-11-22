@@ -5,7 +5,7 @@
   const Coach = (root.Coach = root.Coach || {});
 
   function init() {
-    const { Config, Storage, Audio, Voice, Combos, Engine, Driver, Ranking, Stats, Music } = Coach;
+    const { Config, Storage, Audio, Voice, Combos, Engine, Driver, Ranking, Stats } = Coach;
     const $ = (id) => document.getElementById(id);
     const $$ = (sel, ctx) => Array.from((ctx || document).querySelectorAll(sel));
     const body = document.body;
@@ -155,9 +155,8 @@
       ['defense', 'bool'], ['movement', 'bool'], ['body', 'bool'], ['warn10', 'bool'],
       ['announce', 'bool'], ['vibrate', 'bool'],
       ['roundType', 'str'], ['warmup', 'num'], ['cooldown', 'num'],
-      ['musicVolume', 'num'], ['musicDuck', 'bool'], ['mixAudio', 'bool'],
     ];
-    const RADIOS = { kind: 'str', mode: 'str', level: 'num', pace: 'str', stance: 'str', callStyle: 'str', slipStyle: 'str', endDings: 'num', musicWhen: 'str' };
+    const RADIOS = { kind: 'str', mode: 'str', level: 'num', pace: 'str', stance: 'str', callStyle: 'str', slipStyle: 'str', endDings: 'num' };
 
     function drawSteppers() {
       Object.entries(STEPPERS).forEach(([key, d]) => {
@@ -234,15 +233,9 @@
       Storage.saveSettings(S);
       Audio.configure({ sound: S.bellSound, volume: S.bellVolume, vibrate: S.vibrate });
       Voice.select(S.voiceName);
-      Music.setVolume(S.musicVolume); Music.setDuck(S.musicDuck);
-      applyAudioSession();
       drawAll();
     }
 
-    /* iPhone/Safari: «ambient» deja sonar la música de otra app (y respeta el modo silencio). */
-    function applyAudioSession() {
-      try { if (navigator.audioSession) navigator.audioSession.type = S.mixAudio ? 'ambient' : 'auto'; } catch (e) {}
-    }
 
     function applyLocks() {
       const on = running();
@@ -410,7 +403,7 @@
         card.append(el('div', { className: 'block-head' }, el('span', { className: 'num', textContent: String(i + 1) }), name, up, down, del));
 
         const type = el('select');
-        [['coach', 'Con coach (combos)'], ['free', 'Libre (solo reloj)'], ['warmup', 'Calentamiento guiado'], ['cooldown', 'Vuelta a la calma guiada']].forEach(([v, t]) => {
+        [['coach', 'Con coach'], ['free', 'Solo reloj'], ['warmup', 'Calentamiento'], ['cooldown', 'Vuelta a la calma']].forEach(([v, t]) => {
           const o = el('option', { value: v, textContent: t }); if (b.type === v) o.selected = true; type.append(o);
         });
         type.addEventListener('change', () => {
@@ -439,7 +432,7 @@
 
         // calentamiento / vuelta a la calma
         const typeG = el('select');
-        [['coach', 'Con coach (combos)'], ['free', 'Libre (solo reloj)'], ['warmup', 'Calentamiento guiado'], ['cooldown', 'Vuelta a la calma guiada']].forEach(([v, t]) => {
+        [['coach', 'Con coach'], ['free', 'Solo reloj'], ['warmup', 'Calentamiento'], ['cooldown', 'Vuelta a la calma']].forEach(([v, t]) => {
           const o = el('option', { value: v, textContent: t }); if (b.type === v) o.selected = true; typeG.append(o);
         });
         typeG.addEventListener('change', () => { type.value = typeG.value; type.dispatchEvent(new Event('change')); });
@@ -663,14 +656,8 @@
       return p;
     }
 
-    /* Música: en «solo rounds» suena en los rounds y calla en preparación y descanso. */
-    function musicSync(phase) {
-      if (!Music.count) return;
-      if (S.musicWhen === 'always' || phase === 'work') Music.play(); else Music.pause();
-    }
-
     function start() {
-      Audio.unlock(); Voice.unlock(); applyAudioSession();
+      Audio.unlock(); Voice.unlock();
       Audio.configure({ sound: S.bellSound, volume: S.bellVolume, vibrate: S.vibrate });
       const plan = buildPlan(false);
       if (!plan.length) return;
@@ -693,7 +680,6 @@
           curBS = m.type === 'coach' ? Object.assign({}, S, { mode: m.mode, level: m.level, pace: m.pace, roundType: m.roundType || 'sombra', combo: m.combo || '' }) : S;
           setPhaseUI(seg, plan, index);
           clearTimeout(announceTimer);
-          musicSync(phase);
           if (phase === 'work' && m.guide) {
             // ejercicio de calentamiento / vuelta a la calma: un toque suave, sin campana, y se dice cuál es
             Audio.countdown(1);
@@ -759,14 +745,13 @@
 
     function pause() {
       engine.pause(); if (driver) driver.pause();
-      clearTimeout(announceTimer); Voice.cancel(); Music.pause();
+      clearTimeout(announceTimer); Voice.cancel();
       body.dataset.state = 'paused';
       $('btnMain').textContent = 'REANUDAR';
       $('subText').textContent = 'En pausa';
     }
     function resume() {
       engine.resume(); if (driver) driver.resume();
-      musicSync(engine.phase);
       body.dataset.state = 'running';
       $('btnMain').textContent = 'PAUSAR';
       setPhaseUI(engine.seg, session.plan, engine.index);
@@ -785,7 +770,7 @@
       engine.stop();
       clearTimeout(announceTimer);
       if (driver) driver.stop();
-      Voice.cancel(); Music.stop();
+      Voice.cancel();
       const entry = recordSession(true);
       resetToIdle();
       clearCombo();
@@ -798,7 +783,6 @@
       clearTimeout(announceTimer);
       const lastSeg = session && session.plan[session.plan.length - 1];
       if (lastSeg && lastSeg.meta.guide) Audio.ding(S.endDings);   // el último ejercicio guiado no suena a campana: la ponemos acá
-      Music.stop();
       body.dataset.state = 'idle';
       body.dataset.phase = 'done';
       body.dataset.guide = '';
@@ -1172,31 +1156,6 @@
       Storage.clearHistory(); renderProgress(); renderRanking(); toast('Historial borrado');
     });
 
-    /* ---------------- música ---------------- */
-    let duckSpeech = false, duckBell = false;
-    const applyDuck = () => Music.duck(duckSpeech || duckBell);
-    Voice.hooks.speaking = (on) => { duckSpeech = on; applyDuck(); };
-    Audio.hooks.sound = (ms) => { duckBell = true; applyDuck(); setTimeout(() => { duckBell = false; applyDuck(); }, ms); };
-
-    function drawMusic(info) {
-      info = info || Music.info();
-      const has = info.count > 0;
-      $('btnMusicToggle').textContent = info.playing ? '⏸' : '▶';
-      ['btnMusicPrev', 'btnMusicToggle', 'btnMusicNext'].forEach((id) => { $(id).disabled = !has; });
-      $('musicNow').textContent = has
-        ? `${info.count} ${info.count === 1 ? 'canción' : 'canciones'} · ${info.playing ? 'suena' : 'lista'}: ${info.name}`
-        : 'Todavía no elegiste canciones.';
-    }
-    Music.onChange(drawMusic);
-    $('musicFiles').addEventListener('change', (e) => {
-      const n = Music.setFiles(e.target.files);
-      toast(n ? `${n} ${n === 1 ? 'canción cargada' : 'canciones cargadas'} 🎵` : 'No encontré audios en esa selección');
-      e.target.value = '';
-    });
-    $('btnMusicToggle').addEventListener('click', () => { if (Music.playing) Music.pause(); else Music.play(); });
-    $('btnMusicNext').addEventListener('click', () => Music.next());
-    $('btnMusicPrev').addEventListener('click', () => Music.prev());
-
     /* ---------------- pantalla completa ---------------- */
     $('btnFullscreen').addEventListener('click', () => {
       const on = !body.classList.contains('tv');
@@ -1222,15 +1181,13 @@
     Voice.init(fillVoices);
     Voice.loadClips(drawClips);
     Audio.configure({ sound: S.bellSound, volume: S.bellVolume, vibrate: S.vibrate });
-    Music.setVolume(S.musicVolume); Music.setDuck(S.musicDuck);
-    drawMusic();
     drawAll();
     renderRoutineUI();
     loadRanking(false);
 
     Coach._debug = {
       get S() { return S; }, get engine() { return engine; }, get draft() { return draft; },
-      buildPlan, makeShareBlob, setLast(r) { lastResult = r; }, renderProgress, Music,
+      buildPlan, makeShareBlob, setLast(r) { lastResult = r; }, renderProgress,
     };
   }
 

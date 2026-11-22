@@ -10,8 +10,6 @@
   bellEl.preload = 'auto';
 
   const cfg = { sound: 'file', volume: 0.6, vibrate: true };
-  const hooks = { sound: null };      // se avisa cuando suena algo (la música baja)
-  const heard = (ms) => { if (hooks.sound) hooks.sound(ms); };
 
   function ctxReady() {
     if (!ctx) {
@@ -73,7 +71,6 @@
   /* n campanadas seguidas (separadas ~0,7 s). */
   function ding(n) {
     n = Math.max(1, n || 1);
-    heard(n * 700 + 1300);
     for (let i = 0; i < n; i++) setTimeout(() => playOnce(cfg.volume), i * 700);
     buzz(n === 1 ? [220] : [180, 90, 180]);
   }
@@ -81,7 +78,6 @@
   /* Aviso de 10 segundos: el típico "clap" doble de los relojes de boxeo. */
   function clapper() {
     const c = ctxReady(); if (!c) return;
-    heard(700);
     [0, 0.14].forEach((delay) => {
       const t = c.currentTime + delay;
       const len = Math.floor(c.sampleRate * 0.07);
@@ -109,7 +105,6 @@
 
   Coach.Audio = {
     configure(o) { Object.assign(cfg, o); },
-    hooks,
     unlock, ding, clapper, countdown, buzz,
     testBell() { playOnce(cfg.volume); },
   };

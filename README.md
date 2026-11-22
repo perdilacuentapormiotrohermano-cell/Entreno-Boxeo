@@ -21,7 +21,6 @@ Reloj de boxeo + coach por voz que canta combinaciones **realizables**.
   - *Repetición*: el coach canta un combo una vez y después solo dice «otra»; lo vuelve a cantar entero cada 6 repeticiones. Podés escribir tu propio combo (`1 2 3 2`, `1-2-3-2`, `sj 2 3`…): se valida, y si no se puede hacer te avisa y el coach elige uno. Vacío = uno distinto por round.
   - *Reflejos*: órdenes sueltas y cortas (un golpe, dos, una defensa o un paso) con pausas irregulares, para que no puedas anticiparte; la caja destella con el color de la orden.
 - **Calentamiento y vuelta a la calma guiados** (3, 5 u 8 min; en Reloj, Coach y como bloques de Rutina): 8 ejercicios de calentamiento y 7 de estiramiento, cada uno con su nombre en pantalla y anunciado por voz (en Reloj no hay voz). Sin campana entre ejercicios.
-- **Música propia**: elegís canciones de tu dispositivo (no se suben a ningún lado). Suenan solo en los rounds o todo el tiempo, y **bajan solas** mientras habla el coach o suena la campana. Límites: en iPhone el volumen de un audio no se puede bajar por código, y una app de música externa (Spotify, etc.) no se puede controlar desde una página web: el navegador puede pausarla cuando suena la campana.
 - Rutina nueva: «Técnica y defensa».
 
 ## Archivos
@@ -31,7 +30,6 @@ css/styles.css        diseño
 js/config.js          modos, niveles, ritmos, presets y fórmula de puntos
 js/combos.js          biblioteca de combos + generador + VALIDADOR + tipos de ronda
 js/stats.js           estadísticas del historial (racha, semanas, récords, CSV)
-js/music.js           música propia con bajada automática
 js/coach.js           cuándo y qué canta el coach
 js/timer.js           motor del reloj (fases)
 js/audio.js           campana, aviso 10 s, beeps

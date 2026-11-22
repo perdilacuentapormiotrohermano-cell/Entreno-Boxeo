@@ -275,29 +275,6 @@
       <label class="switch coach-only"><input type="checkbox" id="announce"><span class="track"></span><span class="lbl">Coach anuncia “Round 2”, “Último round”</span></label>
       <label class="switch"><input type="checkbox" id="vibrate"><span class="track"></span><span class="lbl">Vibración <small>(celular)</small></span></label>
 
-      <h3>Música</h3>
-      <p class="hint-line">Elegí canciones de tu dispositivo: suenan durante el entrenamiento y bajan solas cuando habla el coach o suena la campana. No se suben a ningún lado.</p>
-      <div class="row wrap music-row">
-        <label class="btn btn-small file-btn">Elegir canciones<input type="file" id="musicFiles" accept="audio/*" multiple hidden></label>
-        <button type="button" id="btnMusicPrev" class="btn btn-small" aria-label="Canción anterior">⏮</button>
-        <button type="button" id="btnMusicToggle" class="btn btn-small" aria-label="Reproducir o pausar">▶</button>
-        <button type="button" id="btnMusicNext" class="btn btn-small" aria-label="Canción siguiente">⏭</button>
-      </div>
-      <p class="hint-line" id="musicNow">Todavía no elegiste canciones.</p>
-      <div class="field">
-        <label for="musicVolume">Volumen música</label>
-        <input type="range" id="musicVolume" min="0" max="1" step="0.05">
-      </div>
-      <div class="field">
-        <label>Cuándo suena</label>
-        <div class="seg" role="radiogroup" aria-label="Cuándo suena la música">
-          <label><input type="radio" name="musicWhen" value="rounds"><span>Solo en los rounds</span></label>
-          <label><input type="radio" name="musicWhen" value="always"><span>Todo el tiempo</span></label>
-        </div>
-      </div>
-      <label class="switch"><input type="checkbox" id="musicDuck"><span class="track"></span><span class="lbl">Bajar la música cuando habla el coach <small>(y cuando suena la campana)</small></span></label>
-      <label class="switch"><input type="checkbox" id="mixAudio"><span class="track"></span><span class="lbl">Mezclar con otra app de música <small>(iPhone; con el celular en silencio no suena nada)</small></span></label>
-      <p class="hint-line">Si usás Spotify u otra app, el navegador puede pausarla cuando suena la campana o habla el coach; por eso conviene cargar tus canciones acá.</p>
     </section>
 
     <!-- ============ RANKING ============ -->
@@ -400,7 +377,6 @@
 <script src="js/combos.js"></script>
 <script src="js/stats.js"></script>
 <script src="js/audio.js"></script>
-<script src="js/music.js"></script>
 <script src="js/voice.js"></script>
 <script src="js/timer.js"></script>
 <script src="js/coach.js"></script>

@@ -4,7 +4,7 @@
 const CACHE = 'coach-boxeo-v3';
 const ASSETS = [
   './', 'index.html', 'manifest.webmanifest', 'css/styles.css',
-  'js/config.js', 'js/storage.js', 'js/firebase-config.js', 'js/combos.js', 'js/stats.js', 'js/audio.js', 'js/music.js',
+  'js/config.js', 'js/storage.js', 'js/firebase-config.js', 'js/combos.js', 'js/stats.js', 'js/audio.js',
   'js/voice.js', 'js/timer.js', 'js/coach.js', 'js/ranking.js', 'js/ui.js', 'js/main.js',
   'Sonidos/campana.mp3', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
 ];

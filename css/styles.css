@@ -365,8 +365,6 @@ body.tv .top-actions #btnProgress { display: none; }
 #roundType { width: 100%; }
 .hint-line.err { color: var(--amber); }
 .hint-line.ok { color: var(--green); }
-.file-btn { cursor: pointer; display: inline-flex; align-items: center; }
-.music-row .btn-small { padding: 10px 14px; }
 #drillComboField[hidden] { display: none !important; }
 
 /* señal de «Reflejos»: la caja de lo que canta destella con el color del tipo de orden */
@@ -442,3 +440,50 @@ dialog.wide { width: min(94vw, 640px); max-height: 92vh; }
 
 /* espacio entre el total y el calentamiento guiado */
 .total + .grid2 { margin-top: 14px; }
+
+/* ============================================================
+   CELULAR: que el reloj, lo que canta el coach y los botones entren juntos en la pantalla
+   ============================================================ */
+@media (max-width: 700px) {
+  .layout { padding: 12px 12px 40px; gap: 14px; }
+  .card, .stage { padding: 16px; border-radius: 18px; }
+  .stage { gap: 10px; }
+  .phase-pill { font-size: 19px; padding: 3px 14px; }
+  .round-label { font-size: 17px; }
+
+  /* el reloj no puede ser más alto que ~36 % de la pantalla */
+  .dial { width: min(100%, 360px, 36vh); }
+  .time { font-size: clamp(44px, min(13vw, 8.5vh), 80px); }
+  .subtime { font-size: 13px; }
+  body[data-guide="1"] .subtime { font-size: 16px; }
+
+  /* lo que canta el coach: más compacto, golpes en fila */
+  .callout { min-height: 84px; padding: 10px; gap: 6px; }
+  .chips { gap: 6px; }
+  .chip { min-width: 0; padding: 5px 11px; border-radius: 12px; }
+  .chip .main { font-size: clamp(20px, 5.6vw, 28px); }
+  .chip .sub { font-size: 10.5px; }
+  .chip .ico { font-size: 19px; }
+  .history { font-size: 12px; }
+
+  /* los botones quedan pegados abajo mientras se ve el reloj */
+  body:not(.tv) .controls {
+    position: sticky; bottom: 0; z-index: 8;
+    margin-top: 2px; padding: 10px 0 calc(8px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, var(--surface) 78%, transparent);
+  }
+  .btn { padding: 13px 14px; font-size: 20px; }
+
+  /* progreso: el calendario ocupa todo el ancho */
+  .prog { padding: 16px 14px 18px; }
+  .heat-wrap { width: 100%; justify-items: stretch; }
+  .heat { grid-template-rows: repeat(7, auto); grid-auto-columns: 1fr; gap: 3px; width: 100%; max-width: 330px; padding: 2px; }
+  .heat i { width: auto; height: auto; aspect-ratio: 1; }
+  .tile b { font-size: 26px; }
+  dialog.wide { width: 96vw; max-height: 94vh; }
+
+}
+@media (max-width: 700px) and (max-height: 700px) {
+  .dial { width: min(100%, 300px, 32vh); }
+  .callout { min-height: 70px; }
+}
