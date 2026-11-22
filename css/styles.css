@@ -487,3 +487,27 @@ dialog.wide { width: min(94vw, 640px); max-height: 92vh; }
   .dial { width: min(100%, 300px, 32vh); }
   .callout { min-height: 70px; }
 }
+
+/* ---------- celulares angostos (≈ 360 px o menos): la barra de arriba tiene que entrar entera ---------- */
+html, body { overflow-x: clip; }
+@media (max-width: 520px) {
+  .topbar { padding: 8px 10px; gap: 6px; }
+  .brand-mark { width: 22px; height: 22px; }
+  .kind-seg { min-width: 0; }
+  .kind-seg span { padding: 7px 9px; font-size: 13.5px; }
+  .top-actions { gap: 5px; flex: none; }
+  .icon-btn { width: 38px; height: 38px; font-size: 18px; }
+}
+@media (max-width: 380px) {
+  .brand { display: none; }
+  .topbar { justify-content: center; }
+  .kind-seg span { padding: 7px 8px; font-size: 13px; }
+}
+.layout { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 980px) { .layout { grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr); } }
+.layout > *, .side > * { min-width: 0; }
+@media (max-width: 340px) {
+  .stage-head { flex-wrap: wrap; }
+  .controls { grid-template-columns: 1fr 1fr; }
+  .btn { font-size: 17px; padding: 12px 8px; letter-spacing: 0.04em; }
+}
